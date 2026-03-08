@@ -35,10 +35,20 @@ export default Component.extend({
     this._super(...arguments);
 
     cook(this.step.translatedTitle).then((cookedTitle) => {
-      this.set("cookedTitle", cookedTitle);
+      if (this.isDestroying || this.isDestroyed) {
+        return;
+      }
+      if (this.cookedTitle !== cookedTitle) {
+        this.set("cookedTitle", cookedTitle);
+      }
     });
     cook(this.step.translatedDescription).then((cookedDescription) => {
-      this.set("cookedDescription", cookedDescription);
+      if (this.isDestroying || this.isDestroyed) {
+        return;
+      }
+      if (this.cookedDescription !== cookedDescription) {
+        this.set("cookedDescription", cookedDescription);
+      }
     });
 
     uploadStartedEventKeys.forEach((key) => {

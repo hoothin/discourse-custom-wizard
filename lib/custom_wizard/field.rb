@@ -114,6 +114,10 @@ class CustomWizard::Field
         prefill: nil,
         content: nil,
       },
+      radio: {
+        prefill: nil,
+        content: nil,
+      },
       tag: {
         limit: nil,
         prefill: nil,

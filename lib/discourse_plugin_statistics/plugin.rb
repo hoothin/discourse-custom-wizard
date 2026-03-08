@@ -27,6 +27,7 @@ module DiscoursePluginStatistics
             number: 0,
             checkbox: 0,
             dropdown: 0,
+            radio: 0,
             composer: 0,
             composer_preview: 0,
             url: 0,

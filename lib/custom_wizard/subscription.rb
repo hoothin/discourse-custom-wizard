@@ -59,7 +59,7 @@ class CustomWizard::Subscription
           community: ["*"],
         },
         type: {
-          none: %w[text textarea text_only date time date_time number checkbox dropdown upload],
+          none: %w[text textarea text_only date time date_time number checkbox dropdown radio upload],
           standard: ["*"],
           business: ["*"],
           community: ["*"],

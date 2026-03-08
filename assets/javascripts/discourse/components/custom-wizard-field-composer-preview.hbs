@@ -1,5 +1,19 @@
 <div class="wizard-composer-preview d-editor-preview-wrapper">
-  <div class="d-editor-preview">
-    {{html-safe this.field.preview_template}}
-  </div>
+  <button
+    type="button"
+    class="btn btn-default wizard-composer-preview-toggle"
+    {{action "togglePreview"}}
+  >
+    {{#if this.previewCollapsed}}
+      {{i18n "wizard_composer.show_preview"}}
+    {{else}}
+      {{i18n "wizard_composer.hide_preview"}}
+    {{/if}}
+  </button>
+
+  {{#unless this.previewCollapsed}}
+    <div class="d-editor-preview">
+      {{html-safe this.field.preview_template}}
+    </div>
+  {{/unless}}
 </div>

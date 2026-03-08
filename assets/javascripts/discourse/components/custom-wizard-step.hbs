@@ -13,9 +13,9 @@
     <div class="wizard-step-description">{{this.cookedDescription}}</div>
   {{/if}}
 
-  {{#custom-wizard-step-form step=this.step}}
+    {{#custom-wizard-step-form step=this.step}}
     {{#each this.step.fields as |field|}}
-      {{custom-wizard-field field=field step=this.step wizard=this.wizard}}
+      {{custom-wizard-field field=field step=this.step wizard=this.wizard goNext=this.goNext}}
     {{/each}}
   {{/custom-wizard-step-form}}
 </div>

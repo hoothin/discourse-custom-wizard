@@ -8,6 +8,8 @@ import discourseDebounce from "discourse-common/lib/debounce";
 import { on } from "discourse-common/utils/decorators";
 
 export default Component.extend({
+  previewCollapsed: true,
+
   @on("init")
   updatePreview() {
     if (this.isDestroyed) {
@@ -46,5 +48,15 @@ export default Component.extend({
 
     // Short upload urls need resolution
     resolveAllShortUrls(ajax, this.siteSettings, $preview[0]);
+  },
+
+  actions: {
+    togglePreview() {
+      this.toggleProperty("previewCollapsed");
+
+      if (!this.previewCollapsed) {
+        this.updatePreview();
+      }
+    },
   },
 });

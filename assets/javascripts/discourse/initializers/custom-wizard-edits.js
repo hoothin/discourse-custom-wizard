@@ -34,7 +34,11 @@ export default {
                 "category.custom_fields.create_topic_wizard"
               );
               if (createTopicWizard) {
-                window.location.href = getUrl(`/w/${createTopicWizard}`);
+                const categoryId = this.category?.id;
+                const wizardUrl = categoryId
+                  ? `/w/${createTopicWizard}?category_id=${categoryId}`
+                  : `/w/${createTopicWizard}`;
+                window.location.href = getUrl(wizardUrl);
               } else {
                 super.clickCreateTopicButton();
               }

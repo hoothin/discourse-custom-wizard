@@ -1,0 +1,17 @@
+<div class="wizard-radio-group {{this.fieldClass}}">
+  {{#each this.field.content as |option|}}
+    <label
+      class="wizard-radio-option"
+      {{action "onChangeValue" (if option.id option.id option)}}
+    >
+      {{radio-button
+        name=this.field.id
+        value=(if option.id option.id option)
+        selection=this.field.value
+      }}
+      <span class="wizard-radio-option-label">
+        {{if option.name option.name option}}
+      </span>
+    </label>
+  {{/each}}
+</div>

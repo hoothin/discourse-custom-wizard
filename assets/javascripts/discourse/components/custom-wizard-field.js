@@ -15,7 +15,12 @@ export default Component.extend({
     this._super(...arguments);
 
     cook(this.field.translatedDescription).then((cookedDescription) => {
-      this.set("cookedDescription", cookedDescription);
+      if (this.isDestroying || this.isDestroyed) {
+        return;
+      }
+      if (this.cookedDescription !== cookedDescription) {
+        this.set("cookedDescription", cookedDescription);
+      }
     });
   },
 

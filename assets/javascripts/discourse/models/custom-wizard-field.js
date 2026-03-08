@@ -8,6 +8,7 @@ const StandardFieldValidation = [
   "number",
   "textarea",
   "dropdown",
+  "radio",
   "tag",
   "image",
   "user_selector",

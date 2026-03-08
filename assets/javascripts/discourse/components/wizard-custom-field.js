@@ -12,7 +12,9 @@ export default Component.extend(UndoChanges, {
   visible: computed("currentFieldId", function () {
     return this.field.id === this.currentFieldId;
   }),
-  isDropdown: equal("field.type", "dropdown"),
+  isDropdownType: equal("field.type", "dropdown"),
+  isRadioType: equal("field.type", "radio"),
+  isDropdown: or("isDropdownType", "isRadioType"),
   isUpload: equal("field.type", "upload"),
   isCategory: equal("field.type", "category"),
   isTopic: equal("field.type", "topic"),
