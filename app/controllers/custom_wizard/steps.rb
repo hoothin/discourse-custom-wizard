@@ -66,6 +66,41 @@ class CustomWizard::StepsController < ::CustomWizard::WizardClientController
       result[:debug_current_submission_fields] = current_submission.fields
       result[:debug_current_step_id] = current_step.id
       result[:debug_step_2_field_ids] = @wizard.find_step("step_2_subcategory")&.fields&.map(&:id)
+      step_2_template =
+        builder.template.steps.find { |step| step["id"] == "step_2_subcategory" } || {}
+      step_3_template =
+        builder.template.steps.find { |step| step["id"] == "step_3_details" } || {}
+      step_2_template_fields = step_2_template["fields"] || []
+      hiring_field_template =
+        step_2_template_fields.find { |field| field["id"] == "hiring_subcategory" } || {}
+      step_3_hiring_template =
+        (step_3_template["fields"] || []).find { |field| field["id"] == "hiring_company_name" } || {}
+      mapper_data = current_submission.fields_and_meta
+      result[:debug_template_step_2_field_ids] = step_2_template_fields.map { |field| field["id"] }
+      result[:debug_template_step_3_hiring_field_present] = step_3_hiring_template.present?
+      result[:debug_hiring_condition] = hiring_field_template["condition"]
+      result[:debug_hiring_condition_result] =
+        if hiring_field_template["condition"].present?
+          CustomWizard::Mapper.new(
+            inputs: hiring_field_template["condition"],
+            user: current_user,
+            data: mapper_data,
+            opts: {
+              multiple: true,
+            },
+          ).perform
+        end
+      result[:debug_step_3_hiring_condition_result] =
+        if step_3_hiring_template["condition"].present?
+          CustomWizard::Mapper.new(
+            inputs: step_3_hiring_template["condition"],
+            user: current_user,
+            data: mapper_data,
+            opts: {
+              multiple: true,
+            },
+          ).perform
+        end
 
       result.merge!(updater.result) if updater.result.present?
       result[:refresh_required] = true if updater.refresh_required?
