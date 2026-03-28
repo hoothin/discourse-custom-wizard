@@ -172,11 +172,11 @@ class CustomWizard::Mapper
   end
 
   def map_wizard_field(value)
-    data && !data.key?("submitted_at") && data[value]
+    data && data[value]
   end
 
   def map_wizard_action(value)
-    data && !data.key?("submitted_at") && data[value]
+    data && data[value]
   end
 
   def map_user_field(value)

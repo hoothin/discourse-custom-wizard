@@ -207,6 +207,18 @@ describe CustomWizard::Mapper do
     ).to eq("value 1")
   end
 
+  it "maps wizard fields when submission metadata is present" do
+    data_with_meta = data.merge("submitted_at" => Time.now.iso8601)
+
+    expect(
+      CustomWizard::Mapper.new(
+        inputs: inputs["assignment_wizard_field"],
+        data: data_with_meta,
+        user: user1,
+      ).perform,
+    ).to eq("value 1")
+  end
+
   it "maps wizard actions" do
     expect(
       CustomWizard::Mapper.new(
