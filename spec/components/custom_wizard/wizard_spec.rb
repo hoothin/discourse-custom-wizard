@@ -256,6 +256,20 @@ describe CustomWizard::Wizard do
     it "returns the user's current submission" do
       expect(@wizard.current_submission.fields["step_1_field_1"]).to eq("I am a user submission")
     end
+
+    it "returns the most recently updated incomplete submission" do
+      freeze_time Time.now + 1
+      CustomWizard::Submission.new(@wizard, step_1_field_1: "Older incomplete submission").save
+
+      freeze_time Time.now + 2
+      CustomWizard::Submission.new(@wizard, step_1_field_1: "Newest incomplete submission").save
+
+      @wizard.update!
+
+      expect(@wizard.current_submission.fields["step_1_field_1"]).to eq(
+        "Newest incomplete submission",
+      )
+    end
   end
 
   context "class methods" do

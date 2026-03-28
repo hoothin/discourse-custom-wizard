@@ -300,7 +300,7 @@ class CustomWizard::Wizard
       begin
         if submissions.present?
           unsubmitted = submissions.select { |submission| !submission.submitted_at }
-          unsubmitted.present? ? unsubmitted.first : CustomWizard::Submission.new(self)
+          unsubmitted.present? ? most_recent_unsubmitted_submission(unsubmitted) : CustomWizard::Submission.new(self)
         else
           CustomWizard::Submission.new(self)
         end
@@ -418,5 +418,18 @@ class CustomWizard::Wizard
 
   def self.generate_guest_id
     "#{self::GUEST_ID_PREFIX}_#{SecureRandom.hex(12)}"
+  end
+
+  private
+
+  def most_recent_unsubmitted_submission(unsubmitted)
+    zero_epoch_time = DateTime.strptime("0", "%s")
+
+    unsubmitted.each_with_index.max_by do |submission, index|
+      updated_at =
+        submission.updated_at ? Time.iso8601(submission.updated_at) : zero_epoch_time
+
+      [updated_at, index]
+    end&.first
   end
 end
