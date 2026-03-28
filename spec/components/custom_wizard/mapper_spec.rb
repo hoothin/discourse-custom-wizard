@@ -99,6 +99,48 @@ describe CustomWizard::Mapper do
         ).perform,
       ).to eq(nil)
     end
+
+    it "returns a boolean when conditional has no output" do
+      bare_conditional = [
+        {
+          "type" => "conditional",
+          "pairs" => [
+            {
+              "key" => "input_1",
+              "key_type" => "wizard_field",
+              "value" => "value 1",
+              "value_type" => "text",
+              "connector" => "equal",
+            },
+          ],
+        },
+      ]
+
+      expect(CustomWizard::Mapper.new(inputs: bare_conditional, data: data, user: user1).perform).to eq(
+        true,
+      )
+    end
+
+    it "returns false when bare conditional does not pass" do
+      bare_conditional = [
+        {
+          "type" => "conditional",
+          "pairs" => [
+            {
+              "key" => "input_1",
+              "key_type" => "wizard_field",
+              "value" => "different",
+              "value_type" => "text",
+              "connector" => "equal",
+            },
+          ],
+        },
+      ]
+
+      expect(CustomWizard::Mapper.new(inputs: bare_conditional, data: data, user: user1).perform).to eq(
+        false,
+      )
+    end
   end
 
   context "conditional validation" do

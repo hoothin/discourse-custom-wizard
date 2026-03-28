@@ -42,7 +42,25 @@ class CustomWizard::Mapper
       input_type = input["type"]
       pairs = input["pairs"]
 
-      if (input_type === "conditional" && validate_pairs(pairs)) || input_type === "assignment"
+      if input_type === "conditional"
+        result =
+          if input["output"].present? || input["output_type"].present?
+            if validate_pairs(pairs)
+              build_result(map_field(input["output"], input["output_type"]), input_type)
+            end
+          else
+            build_result(validate_pairs(pairs), input_type)
+          end
+
+        if multiple
+          perform_result.push(result)
+        else
+          perform_result = result
+          break
+        end
+      end
+
+      if input_type === "assignment"
         output = input["output"]
         output_type = input["output_type"]
 
