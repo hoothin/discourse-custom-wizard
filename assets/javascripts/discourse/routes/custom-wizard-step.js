@@ -18,10 +18,11 @@ export default Route.extend({
   },
 
   model(params) {
-    const wizard = this.wizard;
+    const wizard = getCachedWizard();
+    this.set("wizard", wizard);
 
     if (wizard && wizard.steps) {
-      const step = wizard.steps.findBy("id", params.step_id);
+      const step = wizard.steps.find((item) => item.id === params.step_id);
       return step ? step : wizard.steps[0];
     } else {
       return wizard;
