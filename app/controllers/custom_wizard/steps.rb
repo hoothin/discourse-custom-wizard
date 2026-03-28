@@ -21,6 +21,9 @@ class CustomWizard::StepsController < ::CustomWizard::WizardClientController
     if updater.success?
       wizard_id = update_params[:wizard_id]
       builder = CustomWizard::Builder.new(wizard_id, current_user, guest_id)
+      if update[:fields].present?
+        builder.wizard.current_submission.fields.merge!(update[:fields])
+      end
       @wizard = builder.build(force: true)
 
       current_step = @wizard.find_step(update[:step_id])
