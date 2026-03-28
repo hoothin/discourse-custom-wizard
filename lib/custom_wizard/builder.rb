@@ -25,6 +25,7 @@ class CustomWizard::Builder
     return nil if !SiteSetting.custom_wizard_enabled || !@wizard
     return @wizard if !@wizard.can_access? && !build_opts[:force]
 
+    @submission_fields_overrides = (build_opts[:submission_fields] || {}).with_indifferent_access
     build_opts[:reset] = build_opts[:reset] || @wizard.restart_on_revisit
 
     @template.steps.each do |step_template|
@@ -78,7 +79,7 @@ class CustomWizard::Builder
         CustomWizard::Mapper.new(
           inputs: template["condition"],
           user: @wizard.user,
-          data: @wizard.current_submission&.fields_and_meta,
+          data: wizard_data,
           opts: {
             multiple: true,
           },
@@ -93,7 +94,7 @@ class CustomWizard::Builder
   private
 
   def mapper
-    CustomWizard::Mapper.new(user: @wizard.user, data: @wizard.current_submission&.fields_and_meta)
+    CustomWizard::Mapper.new(user: @wizard.user, data: wizard_data)
   end
 
   def append_field(step, step_template, field_template, build_opts)
@@ -152,7 +153,7 @@ class CustomWizard::Builder
         CustomWizard::Mapper.new(
           inputs: content_inputs,
           user: @wizard.user,
-          data: @wizard.current_submission&.fields_and_meta,
+          data: wizard_data,
           opts: {
             with_type: true,
           },
@@ -172,7 +173,7 @@ class CustomWizard::Builder
         CustomWizard::Mapper.new(
           inputs: field_template["index"],
           user: @wizard.user,
-          data: @wizard.current_submission&.fields_and_meta,
+          data: wizard_data,
         ).perform
 
       params[:index] = index.to_i unless index.nil?
@@ -219,8 +220,16 @@ class CustomWizard::Builder
       CustomWizard::Mapper.new(
         inputs: prefill,
         user: @wizard.user,
-        data: @wizard.current_submission&.fields_and_meta,
+        data: wizard_data,
       ).perform
+    end
+  end
+
+  def wizard_data
+    @wizard_data ||= begin
+      data = @wizard.current_submission&.fields_and_meta || {}
+      data = data.with_indifferent_access
+      data.merge(@submission_fields_overrides || {})
     end
   end
 
