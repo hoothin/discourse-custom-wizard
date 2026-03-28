@@ -61,6 +61,12 @@ class CustomWizard::StepsController < ::CustomWizard::WizardClientController
         result[:next_step_id] = current_step.next.id
       end
 
+      result[:debug_build_marker] = "2026-03-28-step-debug-1"
+      result[:debug_submitted_fields] = update[:fields]
+      result[:debug_current_submission_fields] = current_submission.fields
+      result[:debug_current_step_id] = current_step.id
+      result[:debug_step_2_field_ids] = @wizard.find_step("step_2_subcategory")&.fields&.map(&:id)
+
       result.merge!(updater.result) if updater.result.present?
       result[:refresh_required] = true if updater.refresh_required?
       result[:wizard] = ::CustomWizard::WizardSerializer.new(
