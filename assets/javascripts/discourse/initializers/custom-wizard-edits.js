@@ -6,6 +6,43 @@ import DiscourseURL from "discourse/lib/url";
 import getUrl from "discourse-common/lib/get-url";
 import CustomWizardTextareaEditor from "../components/custom-wizard-textarea-editor";
 
+/**
+ * 构建分类对应的向导跳转地址。
+ *
+ * @param {object | null | undefined} category 分类对象
+ * @returns {string | null} 配置了向导则返回地址，否则返回 null
+ */
+export function buildCreateTopicWizardUrl(category) {
+  const createTopicWizard = category?.custom_fields?.create_topic_wizard;
+
+  if (!createTopicWizard) {
+    return null;
+  }
+
+  const categoryId = category?.id;
+
+  return categoryId
+    ? `/w/${createTopicWizard}?category_id=${categoryId}`
+    : `/w/${createTopicWizard}`;
+}
+
+/**
+ * 若分类启用了发帖向导，则跳转到对应 wizard。
+ *
+ * @param {object | null | undefined} category 分类对象
+ * @returns {boolean} 是否已处理跳转
+ */
+function redirectToCreateTopicWizard(category) {
+  const wizardUrl = buildCreateTopicWizardUrl(category);
+
+  if (!wizardUrl) {
+    return false;
+  }
+
+  window.location.href = getUrl(wizardUrl);
+  return true;
+}
+
 export default {
   name: "custom-wizard-edits",
   initialize(container) {
@@ -30,21 +67,35 @@ export default {
           class extends Superclass {
             @action
             clickCreateTopicButton() {
-              let createTopicWizard = this.get(
-                "category.custom_fields.create_topic_wizard"
-              );
-              if (createTopicWizard) {
-                const categoryId = this.category?.id;
-                const wizardUrl = categoryId
-                  ? `/w/${createTopicWizard}?category_id=${categoryId}`
-                  : `/w/${createTopicWizard}`;
-                window.location.href = getUrl(wizardUrl);
-              } else {
+              const targetCategory =
+                this.createTopicTargetCategory || this.category;
+
+              if (!redirectToCreateTopicWizard(targetCategory)) {
                 super.clickCreateTopicButton();
               }
             }
           }
       );
+
+      if (container.factoryFor("component:sidebar-new-topic-button")) {
+        api.modifyClass(
+          "component:sidebar-new-topic-button",
+          (Superclass) =>
+            class extends Superclass {
+              @action
+              createNewTopic() {
+                const targetCategory =
+                  this.createTopicTargetCategory ||
+                  this.args?.category ||
+                  this.category;
+
+                if (!redirectToCreateTopicWizard(targetCategory)) {
+                  super.createNewTopic(...arguments);
+                }
+              }
+            }
+        );
+      }
 
       api.modifyClass("component:d-editor", {
         pluginId: "custom-wizard",
