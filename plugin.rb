@@ -59,6 +59,7 @@ after_initialize do
   require_relative "lib/custom_wizard/realtime_validations/result.rb"
   require_relative "lib/custom_wizard/realtime_validations/similar_topics.rb"
   require_relative "lib/custom_wizard/mapper.rb"
+  require_relative "lib/custom_wizard/step_auto_prefill.rb"
   require_relative "lib/custom_wizard/log.rb"
   require_relative "lib/custom_wizard/step_updater.rb"
   require_relative "lib/custom_wizard/step.rb"

@@ -48,6 +48,7 @@ const step = {
     required_data_message: null,
     permitted_params: null,
     condition: null,
+    auto_prefill: null,
     force_final: false,
   },
   mapped: ["required_data", "permitted_params", "condition", "index"],

@@ -89,6 +89,16 @@ class CustomWizard::AdminWizardController < CustomWizard::AdminController
         :raw_description,
         :required_data_message,
         :force_final,
+        auto_prefill: [
+          :mode,
+          depends_on: [],
+          fields: {},
+          rules: [
+            :fallback_sub_label,
+            when: {},
+            fields: {},
+          ],
+        ],
         required_data: mapped_params,
         permitted_params: mapped_params,
         condition: mapped_params,

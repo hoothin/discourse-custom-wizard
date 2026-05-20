@@ -4,7 +4,7 @@ class CustomWizard::Submission
 
   PAGE_LIMIT = 50
   KEY ||= "submissions"
-  META ||= %w[updated_at submitted_at route_to redirect_on_complete redirect_to]
+  META ||= %w[updated_at submitted_at route_to redirect_on_complete redirect_to prefill_state]
 
   attr_reader :id, :wizard
 

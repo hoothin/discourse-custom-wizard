@@ -36,6 +36,7 @@ class CustomWizard::Builder
         next if !step.permitted
 
         save_permitted_params(step_template, params)
+        apply_auto_prefill(step_template)
         step = add_step_attributes(step, step_template)
         step = append_step_fields(step, step_template, build_opts)
 
@@ -43,6 +44,7 @@ class CustomWizard::Builder
           @updater = updater
           @submission = @wizard.current_submission
           @submission.fields.merge!(@updater.submission)
+          apply_auto_prefill(step_template, updater: @updater, submission: @submission)
 
           @updater.validate
           next if @updater.errors.any?
@@ -119,6 +121,12 @@ class CustomWizard::Builder
     params[:value] = prefill_field(field_template, step_template)
 
     if !build_opts[:reset] && (submission = @wizard.current_submission).present?
+      params[:value] = submission.fields[field_template["id"]] if submission.fields[
+        field_template["id"]
+      ]
+    end
+
+    if step_template["auto_prefill"].present? && (submission = @wizard.current_submission).present?
       params[:value] = submission.fields[field_template["id"]] if submission.fields[
         field_template["id"]
       ]
@@ -231,6 +239,29 @@ class CustomWizard::Builder
       data = data.with_indifferent_access
       data.merge(@submission_fields_overrides || {})
     end
+  end
+
+  def apply_auto_prefill(step_template, updater: nil, submission: nil)
+    return if step_template["auto_prefill"].blank?
+
+    submission ||= @wizard.current_submission
+    return if submission.blank?
+
+    data = (submission.fields || {}).with_indifferent_access
+    data.merge!(updater.submission) if updater
+
+    result =
+      CustomWizard::StepAutoPrefill.new(
+        wizard: @wizard,
+        step_template: step_template,
+        steps: @template.steps,
+        data: data,
+      ).apply!(submission.fields, submission.prefill_state)
+
+    submission.fields = result[:fields]
+    submission.prefill_state = result[:prefill_state]
+    updater.submission.merge!(result[:applied_values]) if updater
+    @wizard_data = nil
   end
 
   def check_if_permitted(step, step_template)
