@@ -33,4 +33,21 @@ body.custom-wizard {
     margin-bottom: 20px;
     width: 100%;
   }
+
+  @media screen and (max-width: 700px) {
+    .checkbox-field.rules_agree,
+    .checkbox-field.checkbox-rules-agree {
+      align-items: flex-start;
+      flex-wrap: wrap;
+
+      & > .field-description {
+        flex: 1 0 100%;
+        margin-left: 0;
+        margin-top: 0.35em;
+        min-width: 0;
+        overflow-wrap: anywhere;
+        white-space: normal;
+      }
+    }
+  }
 }
