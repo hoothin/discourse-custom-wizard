@@ -27,6 +27,9 @@ class CustomWizard::Action
       ActiveRecord::Base.transaction { self.send(action["type"].to_sym) }
     rescue Discourse::InvalidParameters => e
       log_error("invalid action parameters", e.message)
+    rescue StandardError => e
+      log_exception(e)
+      log_error("action raised #{e.class}", e.message)
     end
 
     @result.handler.enqueue_jobs if creates_post? && @result.success?
@@ -795,6 +798,14 @@ class CustomWizard::Action
 
   def log_info(message, detail = nil)
     @log.push("info: #{message} - #{detail}")
+  end
+
+  def log_exception(error)
+    Rails.logger.error(
+      "[custom-wizard] action failed wizard_id=#{@wizard.id} action_id=#{action["id"]} " \
+        "action_type=#{action["type"]} error=#{error.class}: #{error.message}\n" \
+        "#{error.backtrace&.first(30)&.join("\n")}",
+    )
   end
 
   def save_log

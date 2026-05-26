@@ -32,6 +32,7 @@ en:
     no_skip: "Wizard can't be skipped"
     completion_action_failed: "Wizard completion action failed: %{action}"
     completion_redirect_missing: "The wizard finished, but no topic URL was generated. The topic was not created successfully."
+    internal_error: "The wizard failed because of an internal server error. Please contact an administrator."
     export:
       error:
         select_one: "Please select at least one valid wizard"

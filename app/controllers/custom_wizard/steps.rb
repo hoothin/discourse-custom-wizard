@@ -78,6 +78,9 @@ class CustomWizard::StepsController < ::CustomWizard::WizardClientController
       end
       render json: { errors: errors }, status: 422
     end
+  rescue StandardError => e
+    log_update_exception(e)
+    render json: { errors: [exception_error(e)] }, status: 422
   end
 
   private
@@ -129,6 +132,28 @@ class CustomWizard::StepsController < ::CustomWizard::WizardClientController
       field: update_params[:wizard_id],
       description: I18n.t("wizard.completion_redirect_missing"),
     }
+  end
+
+  def exception_error(error)
+    {
+      field: params[:wizard_id].presence || "wizard",
+      description: exception_description(error),
+    }
+  end
+
+  def exception_description(error)
+    return "#{error.class}: #{error.message}" if current_user&.staff?
+
+    I18n.t("wizard.internal_error")
+  end
+
+  def log_update_exception(error)
+    Rails.logger.error(
+      "[custom-wizard] step update failed wizard_id=#{params[:wizard_id]} " \
+        "step_id=#{params[:step_id]} user_id=#{current_user&.id} " \
+        "error=#{error.class}: #{error.message}\n" \
+        "#{error.backtrace&.first(50)&.join("\n")}",
+    )
   end
 
   def ensure_can_update
