@@ -23,7 +23,11 @@ class CustomWizard::Action
       return @result
     end
 
-    ActiveRecord::Base.transaction { self.send(action["type"].to_sym) }
+    begin
+      ActiveRecord::Base.transaction { self.send(action["type"].to_sym) }
+    rescue Discourse::InvalidParameters => e
+      log_error("invalid action parameters", e.message)
+    end
 
     @result.handler.enqueue_jobs if creates_post? && @result.success?
 
@@ -784,6 +788,8 @@ class CustomWizard::Action
 
   def log_error(message, detail = nil)
     @log.push("error: #{message} - #{detail}")
+    error_parts = [message, detail].compact.map(&:to_s).reject(&:blank?)
+    @result.error_message = error_parts.join(": ")
     @result.success = false
   end
 

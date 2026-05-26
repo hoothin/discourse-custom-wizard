@@ -32,17 +32,13 @@ class CustomWizard::StepsController < ::CustomWizard::WizardClientController
       end
 
       if current_step.final?
-        builder.template.actions.each do |action_template|
-          if action_template["run_after"] === "wizard_completion"
-            action_result =
-              CustomWizard::Action.new(
-                action: action_template,
-                wizard: @wizard,
-                submission: current_submission,
-              ).perform
+        current_submission, action_errors =
+          run_completion_actions(builder.template.actions, current_submission)
 
-            current_submission = action_result.submission if action_result.success?
-          end
+        if action_errors.present?
+          current_submission.save
+          render json: { errors: action_errors }, status: 422
+          return
         end
 
         current_submission.save
@@ -80,6 +76,38 @@ class CustomWizard::StepsController < ::CustomWizard::WizardClientController
   end
 
   private
+
+  def run_completion_actions(action_templates, current_submission)
+    action_errors = []
+
+    action_templates.each do |action_template|
+      next unless action_template["run_after"] === "wizard_completion"
+
+      action_result =
+        CustomWizard::Action.new(
+          action: action_template,
+          wizard: @wizard,
+          submission: current_submission,
+        ).perform
+
+      if action_result.success?
+        current_submission = action_result.submission
+      else
+        action_errors << action_error(action_template, action_result)
+      end
+    end
+
+    [current_submission, action_errors]
+  end
+
+  def action_error(action_template, action_result)
+    action_name = action_template["title"] || action_template["id"] || action_template["type"]
+    description =
+      action_result.error_message.presence ||
+        I18n.t("wizard.completion_action_failed", action: action_name)
+
+    { field: update_params[:wizard_id], description: description }
+  end
 
   def ensure_can_update
     raise Discourse::InvalidParameters.new(:wizard_id) if @builder.template.nil?

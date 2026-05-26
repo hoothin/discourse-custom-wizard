@@ -221,7 +221,7 @@ export default Component.extend({
           this.goNext(response);
         }
       })
-      .catch(() => this.animateInvalidFields())
+      .catch(() => this.scrollToValidationError())
       .finally(() => this.set("saving", false));
   },
 

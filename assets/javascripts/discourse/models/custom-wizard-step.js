@@ -83,7 +83,6 @@ export default EmberObject.extend(ValidState, {
         if (wizardErrors.length) {
           this.handleWizardError(wizardErrors.join("\n"));
         }
-        this.animateInvalidFields();
         throw response;
       }
 

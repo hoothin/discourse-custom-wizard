@@ -30,6 +30,7 @@ en:
 
     none: "We couldn't find a wizard at that address."
     no_skip: "Wizard can't be skipped"
+    completion_action_failed: "Wizard completion action failed: %{action}"
     export:
       error:
         select_one: "Please select at least one valid wizard"

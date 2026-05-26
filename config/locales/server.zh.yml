@@ -25,6 +25,7 @@ zh-CN:
       invalid_time: "Invalid time"
     none: "We couldn't find a wizard at that address."
     no_skip: "Wizard can't be skipped"
+    completion_action_failed: "向导完成动作失败：%{action}"
     export:
       error:
         select_one: "请选择至少一个有效向导"
