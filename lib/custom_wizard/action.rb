@@ -56,23 +56,32 @@ class CustomWizard::Action
 
   def create_topic
     params = basic_topic_params.merge(public_topic_params)
+    return if result.failed?
 
     callbacks_for(:before_create_topic).each do |acb|
       params = acb.call(params, @wizard, @action, @submission)
     end
+    return if result.failed?
 
     if params[:title].present? && params[:raw].present?
       creator = PostCreator.new(topic_poster, params)
       post = creator.create
+      category_applied = true
 
       if creator.errors.present?
         messages = creator.errors.full_messages.join(" ")
         log_error("failed to create", messages)
+      elsif !expected_category_applied?(post.topic, params[:category_id])
+        category_applied = false
+        log_error(
+          "category not applied",
+          "expected: #{params[:category_id]}; actual: #{post.topic.category_id || "none"}",
+        )
       elsif action["skip_redirect"].blank?
         @submission.redirect_on_complete = post.topic.url
       end
 
-      if creator.errors.blank?
+      if creator.errors.blank? && category_applied
         log_success("created topic", "id: #{post.topic.id}")
         result.handler = creator
         result.output = post.topic.id
@@ -467,13 +476,20 @@ class CustomWizard::Action
 
     return false if output.blank?
 
-    if output.is_a?(Array)
-      output.first
-    elsif output.is_a?(Integer)
-      output
-    elsif output.is_a?(String)
-      output.to_i
-    end
+    category_id =
+      if output.is_a?(Array)
+        output.first
+      elsif output.is_a?(Integer)
+        output
+      elsif output.is_a?(String)
+        output.to_i
+      end
+
+    category_id = category_id.to_i
+    return false if category_id <= 0
+    return false if !Category.exists?(id: category_id)
+
+    category_id
   end
 
   def action_tags
@@ -583,8 +599,15 @@ class CustomWizard::Action
   def public_topic_params
     params = {}
 
-    if category = action_category
+    if action["category"].present?
+      category = action_category
+      if !category
+        log_error("invalid category params", "category: #{action["category"].inspect}")
+        return params
+      end
+
       params[:category] = category
+      params[:category_id] = category
     end
 
     if tags = action_tags
@@ -604,6 +627,12 @@ class CustomWizard::Action
     end
 
     params
+  end
+
+  def expected_category_applied?(topic, expected_category_id)
+    return true if expected_category_id.blank?
+
+    topic.reload.category_id.to_i == expected_category_id.to_i
   end
 
   def topic_poster
