@@ -36,7 +36,7 @@ class CustomWizard::Builder
         next if !step.permitted
 
         save_permitted_params(step_template, params)
-        apply_auto_prefill(step_template)
+        apply_auto_prefill(step_template, reset: build_opts[:reset])
         step = add_step_attributes(step, step_template)
         step = append_step_fields(step, step_template, build_opts)
 
@@ -44,7 +44,12 @@ class CustomWizard::Builder
           @updater = updater
           @submission = @wizard.current_submission
           @submission.fields.merge!(@updater.submission)
-          apply_auto_prefill(step_template, updater: @updater, submission: @submission)
+          apply_auto_prefill(
+            step_template,
+            updater: @updater,
+            submission: @submission,
+            reset: build_opts[:reset],
+          )
 
           @updater.validate
           next if @updater.errors.any?
@@ -120,16 +125,15 @@ class CustomWizard::Builder
 
     params[:value] = prefill_field(field_template, step_template)
 
-    if !build_opts[:reset] && (submission = @wizard.current_submission).present?
-      params[:value] = submission.fields[field_template["id"]] if submission.fields[
-        field_template["id"]
-      ]
-    end
+    if (submission = @wizard.current_submission).present?
+      field_id = field_template["id"]
+      submission_fields = (submission.fields || {}).with_indifferent_access
 
-    if step_template["auto_prefill"].present? && (submission = @wizard.current_submission).present?
-      params[:value] = submission.fields[field_template["id"]] if submission.fields[
-        field_template["id"]
-      ]
+      if !build_opts[:reset] && submission_fields[field_id]
+        params[:value] = submission_fields[field_id]
+      elsif auto_prefill_value?(step_template, submission, field_id)
+        params[:value] = submission_fields[field_id]
+      end
     end
 
     if field_template["type"] === "group" && params[:value].present?
@@ -241,13 +245,16 @@ class CustomWizard::Builder
     end
   end
 
-  def apply_auto_prefill(step_template, updater: nil, submission: nil)
+  def apply_auto_prefill(step_template, updater: nil, submission: nil, reset: false)
     return if step_template["auto_prefill"].blank?
 
     submission ||= @wizard.current_submission
     return if submission.blank?
 
     data = (submission.fields || {}).with_indifferent_access
+    if reset && !updater
+      current_step_field_ids(step_template).each { |field_id| data.delete(field_id) }
+    end
     data.merge!(updater.submission) if updater
 
     result =
@@ -262,6 +269,10 @@ class CustomWizard::Builder
     submission.prefill_state = result[:prefill_state]
     updater.submission.merge!(result[:applied_values]) if updater
     @wizard_data = nil
+  end
+
+  def current_step_field_ids(step_template)
+    (step_template["fields"] || []).map { |field| field["id"] }
   end
 
   def check_if_permitted(step, step_template)
@@ -312,6 +323,19 @@ class CustomWizard::Builder
 
   def standardise_boolean(value)
     ActiveRecord::Type::Boolean.new.cast(value)
+  end
+
+  def auto_prefill_value?(step_template, submission, field_id)
+    return false if step_template["auto_prefill"].blank?
+
+    submission_fields = (submission.fields || {}).with_indifferent_access
+    return false if !submission_fields.key?(field_id)
+
+    state = (submission.prefill_state || {}).with_indifferent_access
+    step_state = (state[step_template["id"]] || {}).with_indifferent_access
+    auto_values = (step_state["auto_values"] || {}).with_indifferent_access
+
+    auto_values.key?(field_id) && submission_fields[field_id] == auto_values[field_id]
   end
 
   def save_permitted_params(step_template, params)
