@@ -2,6 +2,7 @@ import Component from "@ember/component";
 import { alias, not, or } from "@ember/object/computed";
 import { schedule } from "@ember/runloop";
 import { htmlSafe } from "@ember/template";
+import I18n from "I18n";
 import $ from "jquery";
 import { cook } from "discourse/lib/text";
 import getUrl from "discourse-common/lib/get-url";
@@ -165,6 +166,30 @@ export default Component.extend({
     });
   },
 
+  plainText(value) {
+    const element = document.createElement("div");
+    element.innerHTML = value || "";
+    return element.textContent || element.innerText || value || "";
+  },
+
+  invalidFieldLabels() {
+    return this.step.fields
+      .filter((field) => field.get("invalid"))
+      .map((field) =>
+        this.plainText(field.get("translatedLabel") || field.get("id"))
+      );
+  },
+
+  showValidationError() {
+    const labels = this.invalidFieldLabels();
+    const fields = labels.length ? labels.join("、") : "";
+
+    this.showMessage({
+      state: "error",
+      text: I18n.t("wizard.validation_error", { fields }),
+    });
+  },
+
   advance() {
     this.set("saving", true);
     this.get("step")
@@ -233,6 +258,7 @@ export default Component.extend({
       if (this.step.get("valid")) {
         this.advance();
       } else {
+        this.showValidationError();
         this.autoFocus();
       }
     },

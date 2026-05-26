@@ -24,6 +24,7 @@ zh-TW:
       uploading: "Uploading..."
       upload_error: "Sorry, there was an error uploading that file. Please try again."
       field_required: "%{label}為必填項。"
+      validation_error: "請補全必填項：%{fields}"
     wizard_composer:
       show_preview: "Preview Post"
       hide_preview: "Edit Post"

@@ -25,6 +25,7 @@ en:
       uploading: "Uploading..."
       upload_error: "Sorry, there was an error uploading that file. Please try again."
       field_required: "%{label} is required."
+      validation_error: "Please complete the required fields: %{fields}"
 
     wizard_composer:
       show_preview: "Preview Post"

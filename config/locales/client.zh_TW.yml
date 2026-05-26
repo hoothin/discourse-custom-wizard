@@ -6,6 +6,7 @@ zh_TW:
       back: "返回"
       next: "下一步"
       field_required: "%{label}為必填項。"
+      validation_error: "請補全必填項：%{fields}"
     wizard_composer:
       show_preview: "貼文預覽"
       hide_preview: "返回編輯"
