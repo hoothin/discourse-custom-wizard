@@ -24,6 +24,7 @@ en:
       upload: "Upload"
       uploading: "Uploading..."
       upload_error: "Sorry, there was an error uploading that file. Please try again."
+      field_required: "%{label} is required."
 
     wizard_composer:
       show_preview: "Preview Post"

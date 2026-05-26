@@ -5,6 +5,7 @@ zh_TW:
       done_custom: "完成"
       back: "返回"
       next: "下一步"
+      field_required: "%{label}為必填項。"
     wizard_composer:
       show_preview: "貼文預覽"
       hide_preview: "返回編輯"

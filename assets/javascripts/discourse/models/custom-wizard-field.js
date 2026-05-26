@@ -1,4 +1,5 @@
 import EmberObject from "@ember/object";
+import I18n from "I18n";
 import discourseComputed from "discourse-common/utils/decorators";
 import { translationOrText } from "discourse/plugins/discourse-custom-wizard/discourse/lib/wizard";
 import ValidState from "discourse/plugins/discourse-custom-wizard/discourse/mixins/valid-state";
@@ -48,6 +49,17 @@ export default EmberObject.extend(ValidState, {
     return translationOrText(`${i18nKey}.description`, description);
   },
 
+  plainText(value) {
+    const element = document.createElement("div");
+    element.innerHTML = value || "";
+    return element.textContent || element.innerText || value || "";
+  },
+
+  requiredMessage() {
+    const label = this.plainText(this.get("translatedLabel") || this.id);
+    return I18n.t("wizard.field_required", { label });
+  },
+
   check() {
     if (this.customCheck) {
       return this.customCheck();
@@ -73,8 +85,9 @@ export default EmberObject.extend(ValidState, {
       valid = true;
     }
 
-    this.setValid(Boolean(valid));
+    const isValid = Boolean(valid);
+    this.setValid(isValid, isValid ? null : this.requiredMessage());
 
-    return valid;
+    return isValid;
   },
 });
