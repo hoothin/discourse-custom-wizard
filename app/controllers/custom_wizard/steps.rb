@@ -109,7 +109,7 @@ class CustomWizard::StepsController < ::CustomWizard::WizardClientController
   end
 
   def action_error(action_template, action_result)
-    action_name = action_template["title"] || action_template["id"] || action_template["type"]
+    action_name = action_template["id"] || action_template["type"]
     description =
       action_result.error_message.presence ||
         I18n.t("wizard.completion_action_failed", action: action_name)

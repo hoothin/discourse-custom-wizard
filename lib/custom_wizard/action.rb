@@ -56,12 +56,12 @@ class CustomWizard::Action
 
   def create_topic
     params = basic_topic_params.merge(public_topic_params)
-    return if result.failed?
+    return if result.error_message.present?
 
     callbacks_for(:before_create_topic).each do |acb|
       params = acb.call(params, @wizard, @action, @submission)
     end
-    return if result.failed?
+    return if result.error_message.present?
 
     if params[:title].present? && params[:raw].present?
       creator = PostCreator.new(topic_poster, params)
