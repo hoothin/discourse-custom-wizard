@@ -26,6 +26,7 @@ en:
       upload_error: "Sorry, there was an error uploading that file. Please try again."
       field_required: "%{label} is required."
       validation_error: "Please complete the required fields: %{fields}"
+      invalid_response: "The wizard received an invalid server response. Please try again or contact an administrator."
 
     wizard_composer:
       show_preview: "Preview Post"

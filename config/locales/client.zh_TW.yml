@@ -7,6 +7,7 @@ zh_TW:
       next: "下一步"
       field_required: "%{label}為必填項。"
       validation_error: "請補全必填項：%{fields}"
+      invalid_response: "向導收到了無效的伺服器回應。請稍後重試或聯絡管理員。"
     wizard_composer:
       show_preview: "貼文預覽"
       hide_preview: "返回編輯"

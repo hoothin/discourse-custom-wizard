@@ -7,6 +7,7 @@ zh_CN:
       next: "下一步"
       field_required: "%{label}为必填项。"
       validation_error: "请补全必填项：%{fields}"
+      invalid_response: "向导收到了无效的服务器响应。请稍后重试或联系管理员。"
     wizard_composer:
       show_preview: "预览帖子"
       hide_preview: "返回编辑"

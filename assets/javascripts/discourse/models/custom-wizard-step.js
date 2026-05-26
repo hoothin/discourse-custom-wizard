@@ -1,6 +1,7 @@
 import EmberObject from "@ember/object";
 import { later } from "@ember/runloop";
 import { ajax } from "discourse/lib/ajax";
+import I18n from "I18n";
 import discourseComputed from "discourse-common/utils/decorators";
 import { translationOrText } from "discourse/plugins/discourse-custom-wizard/discourse/lib/wizard";
 import ValidState from "discourse/plugins/discourse-custom-wizard/discourse/mixins/valid-state";
@@ -50,6 +51,25 @@ export default EmberObject.extend(ValidState, {
     }
   },
 
+  validSaveResponse(response) {
+    return (
+      response &&
+      typeof response === "object" &&
+      !Array.isArray(response) &&
+      Object.prototype.hasOwnProperty.call(response, "final") &&
+      response["wizard"]
+    );
+  },
+
+  rejectInvalidSaveResponse(response) {
+    if (this.validSaveResponse(response)) {
+      return response;
+    }
+
+    this.handleWizardError(I18n.t("wizard.invalid_response"));
+    throw new Error("Invalid custom wizard step response");
+  },
+
   save() {
     const wizardId = this.get("wizardId");
     const fields = {};
@@ -65,36 +85,40 @@ export default EmberObject.extend(ValidState, {
       type: "PUT",
       contentType: "application/json",
       data: JSON.stringify({ fields }),
-    }).catch((response) => {
-      if (response.jqXHR) {
-        response = response.jqXHR;
-      }
-      if (response && response.responseJSON && response.responseJSON.errors) {
-        let wizardErrors = [];
-        response.responseJSON.errors.forEach((err) => {
-          if (err.field === wizardId) {
-            wizardErrors.push(err.description);
-          } else if (err.field) {
-            this.fieldError(err.field, err.description);
-          } else if (err) {
-            wizardErrors.push(err);
-          }
-        });
-        if (wizardErrors.length) {
-          this.handleWizardError(wizardErrors.join("\n"));
+    })
+      .then((response) => this.rejectInvalidSaveResponse(response))
+      .catch((response) => {
+        if (response.jqXHR) {
+          response = response.jqXHR;
         }
-        throw response;
-      }
+        if (response && response.responseJSON && response.responseJSON.errors) {
+          let wizardErrors = [];
+          response.responseJSON.errors.forEach((err) => {
+            if (err.field === wizardId) {
+              wizardErrors.push(err.description);
+            } else if (err.field) {
+              this.fieldError(err.field, err.description);
+            } else if (err) {
+              wizardErrors.push(err);
+            }
+          });
+          if (wizardErrors.length) {
+            this.handleWizardError(wizardErrors.join("\n"));
+          }
+          throw response;
+        }
 
-      if (response && response.responseText) {
-        const responseText = response.responseText;
-        const start = responseText.indexOf(">") + 1;
-        const end = responseText.indexOf("plugins");
-        const message = responseText.substring(start, end);
-        this.handleWizardError(message);
-        throw message;
-      }
-    });
+        if (response && response.responseText) {
+          const responseText = response.responseText;
+          const start = responseText.indexOf(">") + 1;
+          const end = responseText.indexOf("plugins");
+          const message = responseText.substring(start, end);
+          this.handleWizardError(message);
+          throw message;
+        }
+
+        throw response;
+      });
   },
 
   handleWizardError(message) {

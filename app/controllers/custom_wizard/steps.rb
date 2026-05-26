@@ -47,6 +47,11 @@ class CustomWizard::StepsController < ::CustomWizard::WizardClientController
           updater.result[:redirect_on_complete] = redirect
         end
 
+        if missing_completion_redirect?(builder.template.actions, updater.result)
+          render json: { errors: [missing_completion_redirect_error] }, status: 422
+          return
+        end
+
         @wizard.cleanup_on_complete!
 
         result[:final] = true
@@ -107,6 +112,23 @@ class CustomWizard::StepsController < ::CustomWizard::WizardClientController
         I18n.t("wizard.completion_action_failed", action: action_name)
 
     { field: update_params[:wizard_id], description: description }
+  end
+
+  def missing_completion_redirect?(action_templates, result)
+    return false if result[:redirect_on_complete].present?
+
+    action_templates.any? do |action_template|
+      action_template["run_after"] === "wizard_completion" &&
+        %w[create_topic send_message].include?(action_template["type"]) &&
+        action_template["skip_redirect"].blank?
+    end
+  end
+
+  def missing_completion_redirect_error
+    {
+      field: update_params[:wizard_id],
+      description: I18n.t("wizard.completion_redirect_missing"),
+    }
   end
 
   def ensure_can_update

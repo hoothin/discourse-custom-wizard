@@ -26,6 +26,7 @@ zh-CN:
     none: "We couldn't find a wizard at that address."
     no_skip: "Wizard can't be skipped"
     completion_action_failed: "向导完成动作失败：%{action}"
+    completion_redirect_missing: "向导已完成，但没有生成帖子地址。帖子没有成功创建。"
     export:
       error:
         select_one: "请选择至少一个有效向导"
