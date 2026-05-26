@@ -166,6 +166,24 @@ export default Component.extend({
     });
   },
 
+  scrollToValidationError() {
+    schedule("afterRender", () => {
+      const $message = $(".step-message.error").first();
+
+      if ($message.length) {
+        $([document.documentElement, document.body]).animate(
+          {
+            scrollTop: Math.max($message.offset().top - 120, 0),
+          },
+          400
+        );
+        return;
+      }
+
+      this.animateInvalidFields();
+    });
+  },
+
   plainText(value) {
     const element = document.createElement("div");
     element.innerHTML = value || "";
@@ -259,7 +277,7 @@ export default Component.extend({
         this.advance();
       } else {
         this.showValidationError();
-        this.autoFocus();
+        this.scrollToValidationError();
       }
     },
   },
